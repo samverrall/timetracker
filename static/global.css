@@ -48,3 +48,62 @@ a {
 	color: inherit;
 	text-decoration: none;
 }
+
+.group {
+	margin: 0.3rem 0 1rem 0;
+	display: flex;
+	flex-direction: column;
+	width: 100%;
+	text-align: left;
+}
+
+input {
+	border: 1px solid rgba(0,0,0,0.1);
+	padding: 0.5rem 0.6rem;
+	border-radius: 0.3rem;
+	transition: 0.3s ease-in-out;
+}
+
+input:focus {
+	border: 1px solid var(--accent);
+	background: rgba(0,0,0,0.05);
+}
+
+input::placeholder {
+	color: rgba(0,0,0,0.3);
+}
+
+label {
+	font-size: 0.8rem;
+	font-weight: 400;
+}
+
+form {
+	width: 400px;
+}
+
+button {
+	background: var(--accent);
+	border: none;
+	color: #fff;
+	border-radius: 6px;
+	padding: 0.6rem;
+	font-size: 1rem;
+	cursor: pointer;
+	transition: 0.3s ease-in-out;
+	margin: 0 0.4em;
+}
+
+button:hover {
+	background: var(--accent-dark);
+}
+
+p a {
+	color: var(--accent);
+}
+
+.input-form {
+	background: #fff;
+	border-radius: 2rem;
+	padding: 2rem;
+}

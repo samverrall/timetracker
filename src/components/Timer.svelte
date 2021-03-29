@@ -4,11 +4,11 @@
     <p>You have completed {25 * completedWorkPeriods} minutes of work, and had {compeltedBreakPeriods * 5} minutes of breaks.</p>
 
     {#if hasTimerStarted && type}
-      <p>You are working on: {type}</p>
+      <p transition:fade>Working on: <i>{type}</i></p>
     {/if}
 
     {#if !hasTimerStarted}
-      <div class="input-group">
+      <div class="group">
         <input bind:value={type} type="text" placeholder="What are you working on? 🚀">
       </div>
     {/if}
@@ -50,6 +50,7 @@
 <script>
   import { config } from '../api/config'
   import { format } from 'date-fns'
+  import { fade } from 'svelte/transition'
 
   let type = ''
 
@@ -79,6 +80,7 @@
     minutesLeft = 25
     secondsLeft = 0
     hasTimerStarted = false
+    type = ''
 
     clearInterval(countdown)
   }
@@ -236,47 +238,7 @@
   }
 
   button {
-    background: var(--accent);
-    border: none;
-    color: #fff;
     border-radius: 100%;
-    padding: 0.6rem;
     font-size: 2rem;
-    cursor: pointer;
-    transition: 0.3s ease-in-out;
-    margin: 0 0.4em;
-  }
-
-  button:hover {
-    background: var(--accent-dark);
-  }
-
-  .input-group {
-    margin: 0.3rem 0 1rem 0;
-    display: flex;
-    flex-direction: column;
-    width: 100%;
-    text-align: left;
-  }
-
-  input {
-    border: 1px solid rgba(0,0,0,0.1);
-    padding: 0.5rem 0.6rem;
-    border-radius: 0.3rem;
-    transition: 0.3s ease-in-out;
-  }
-
-  input:focus {
-    border: 1px solid var(--accent);
-    background: rgba(0,0,0,0.05);
-  }
-
-  input::placeholder {
-    color: rgba(0,0,0,0.3);
-  }
-
-  label {
-    font-size: 0.8rem;
-    font-weight: 400;
   }
 </style>

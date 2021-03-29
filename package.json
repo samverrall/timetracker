@@ -9,6 +9,7 @@
     "start": "node __sapper__/build"
   },
   "dependencies": {
+    "axios": "^0.21.1",
     "chartjs": "^0.3.24",
     "compression": "^1.7.1",
     "date-fns": "^2.19.0",

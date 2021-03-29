@@ -1,22 +1,28 @@
-<nav class:minimized on:mouseover={() => { minimized = false }}>
-	<span on:click={toggleMinimize} class="material-icons minimize-icon">
-		{!minimized ? 'chevron_right' : 'chevron_left'}
-	</span>
+{#if $store.showMenu}
+	<nav class:minimized on:mouseover={() => { minimized = false }}>
+		<span on:click={toggleMinimize} class="material-icons minimize-icon">
+			{!minimized ? 'chevron_right' : 'chevron_left'}
+		</span>
 
-	<div class="top-menu">
-		<a href="/" class:active={segment === undefined} class="material-icons">logout</a>
-	</div>
+		<div class="top-menu">
+			<a href="/" class:active={segment === undefined} class="material-icons">logout</a>
+		</div>
 
-	<div class="menu">
-		<a href="/" class:active={segment === undefined} class="timer-link">Dashboard</a>
-		<a href="/" class="timer-link">Data</a>
-		<a href="/" class="timer-link">Config</a>
-	</div>
-	<div></div>
-</nav>
+		<div class="menu">
+			<a href="/" class:active={segment === undefined} class="timer-link">Dashboard</a>
+			<a href="/" class="timer-link">Data</a>
+			<a href="/" class="timer-link">Config</a>
+		</div>
+		<div></div>
+	</nav>
+{/if}
 
 <script>
 	export let segment
+
+	import { getContext } from 'svelte'
+
+	const store = getContext('store')
 
 	let minimized = false
 
