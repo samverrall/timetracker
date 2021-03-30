@@ -19,7 +19,6 @@
   </form>
 </div>
 
-
 <script>
   import { getContext } from 'svelte'
 
@@ -55,13 +54,5 @@
 <style>
   button {
     margin-left: 0;
-  }
-
-  .fullscreen-wrapper {
-    width: 100%;
-    height: 100%;
-    display: flex;
-    justify-content: center;
-    align-items: center;
   }
 </style>
