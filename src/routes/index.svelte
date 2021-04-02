@@ -1,42 +1,45 @@
-<div class="container">
-	<p>Good {isAfternoon() ? 'afternoon' : 'morning'}, Sam! 🌥</p>
-
-	<div class="cols">
-		<div class="col-1">
-			<Timer />
-		</div>
-		<div class="col-2">
-		</div>
-	</div>
-</div>
-
 <script>
-	import Timer from '../components/Timer.svelte'
+  import Timer from '../components/Timer.svelte'
+  import { stores } from '@sapper/app'
+  const { session, page } = stores()
 
-	function isAfternoon () {
-		const curHr = new Date().getHours()
+  const user = $session.user || null
 
-		if (curHr > 12) {
-			return true
-		}
+  function isAfternoon() {
+    const curHr = new Date().getHours()
 
-		return false
-	}
+    if (curHr > 12) {
+      return true
+    }
+
+    return false
+  }
 </script>
 
+<div class="container">
+  <p>Good {isAfternoon() ? 'afternoon' : 'morning'}, {user ? user.name : 'human'}! 🌥</p>
+
+  <div class="cols">
+    <div class="col-1">
+      <Timer />
+    </div>
+    <div class="col-2" />
+  </div>
+</div>
+
 <svelte:head>
-	<title>TimeTracker.io 🕦</title>
+  <title>TimeTracker.io 🕦</title>
 </svelte:head>
 
 <style>
-	.container {
-		width: 100%;
-		height: 100vh;
-	}
+  .container {
+    width: 100%;
+    height: 100vh;
+  }
 
-	.cols {
-		width: 100%;
-		display: grid;
-		grid-template-columns: 4fr 4fr;
-	}
+  .cols {
+    width: 100%;
+    display: grid;
+    grid-template-columns: 4fr 4fr;
+  }
 </style>

@@ -4,6 +4,13 @@
 	outline: none;
 }
 
+* {
+	padding: 0;
+	margin: 0;
+	box-sizing: border-box;
+	line-height: 1.8;
+}
+
 :root {
 	--border-gray: rgba(0,0,0,0.01);
 	--accent: #01abe4;
@@ -114,4 +121,5 @@ p a {
 	display: flex;
 	justify-content: center;
 	align-items: center;
+	flex-direction: column;
 }

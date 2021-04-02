@@ -1,28 +1,13 @@
-<div class="fullscreen-wrapper">
-  <form on:submit={submitForm} class="input-form">
-    <h3>✏️ Login</h3>
-    <p>Login to access your data. 🚀</p>
-
-    <div class="group">
-      <label for="email-field">Email</label>
-      <input bind:this={user.email} id="email-field" type="text" placeholder="example@email.co.uk" />
-    </div>
-
-    <div class="group">
-      <label for="password-field">Password</label>
-      <input bind:this={user.password}  id="password-field" type="password" placeholder="password..." />
-    </div>
-
-    <p>Don't have an account? <a href="/register">Register</a>.</p>
-
-    <button>Login</button>
-  </form>
-</div>
-
 <script>
   import { getContext } from 'svelte'
+  import { onMount, onDestroy } from 'svelte'
+  import AlertBox from '../AlertBox.svelte'
+  import axios from 'axios'
+  import { goto } from '@sapper/app'
 
-  const store = getContext('store')
+  const platform = getContext('platform')
+  const { store } = platform
+
   $store.showMenu = false
 
   let user = {
@@ -30,10 +15,23 @@
     password: '',
   }
   let error = false
+  let showSignUpMessage = false
 
-  function submitForm (e) {
-    e.preventDefault()
+  onMount(() => {
+    const urlParams = new URLSearchParams(window.location.search)
 
+    if (urlParams.get('sign-up')) {
+      showSignUpMessage = true
+    }
+  })
+
+  onDestroy(() => {
+    const urlParams = new URLSearchParams()
+
+    urlParams.delete('sign-up')
+  })
+
+  async function submitForm() {
     error = false
 
     if (!user.email || !user.password) {
@@ -45,11 +43,53 @@
     }
 
     try {
+      const authorisedUser = await axios.post('http://localhost:5000/api/auth/login', user)
+
+      console.log('authorisedUser', authorisedUser)
+
+      if (authorisedUser.data) {
+        if (localStorage.getItem('token')) {
+          localStorage.removeItem('token')
+        }
+
+        localStorage.setItem('token', authorisedUser.data.secret.token)
+
+        delete authorisedUser.data.secret
+
+        $store.auth = authorisedUser.data.public.claims
+
+        goto('/')
+      }
     } catch (err) {
       console.error(err)
     }
   }
 </script>
+
+<div class="fullscreen-wrapper">
+  {#if showSignUpMessage}
+    <AlertBox isSuccess={true} heading="Successfully registered 🥳" message="You can now login!" />
+  {/if}
+
+  <form on:submit|preventDefault={submitForm} class="input-form">
+    <h3>✏️ Login</h3>
+    <p>Login to access your data. 🚀</p>
+
+    <div class="group">
+      <label for="email-field">Email</label>
+      <input bind:value={user.email} id="email-field" type="text" placeholder="example@email.co.uk" />
+    </div>
+
+    <div class="group">
+      <label for="password-field">Password</label>
+      <input bind:value={user.password} id="password-field" type="password" placeholder="password..." />
+    </div>
+
+    <p>Don't have an account? <a href="/register">Register</a>.</p>
+
+    <button>Login</button>
+  </form>
+</div>
 
 <style>
   button {

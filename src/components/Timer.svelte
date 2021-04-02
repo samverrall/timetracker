@@ -1,7 +1,140 @@
+<script>
+  import { config } from '../api/config'
+  import { format } from 'date-fns'
+  import { fade } from 'svelte/transition'
+  import { onMount, getContext } from 'svelte'
+  import axios from 'axios'
+  import { stores } from '@sapper/app'
+  const { session, page } = stores()
+
+  let user = $session.user || user
+  let type = ''
+
+  let minutesLeft = 25
+  let secondsLeft = 0
+  let hasTimerStarted = false
+  let countdown = null
+
+  let completedWorkPeriods = 0
+  let compeltedBreakPeriods = 0
+  let now = null
+  let nowAtPaused = null
+
+  let log = []
+
+  function formatDate(date) {
+    return format(date, 'HH:mm:ss aa')
+  }
+
+  function pauseTimer() {
+    nowAtPaused = now
+
+    clearInterval(countdown)
+  }
+
+  function resetTimer() {
+    minutesLeft = 25
+    secondsLeft = 0
+    hasTimerStarted = false
+    type = ''
+
+    clearInterval(countdown)
+  }
+
+  function getEmoji(periodType) {
+    switch (periodType) {
+      case 'started':
+        return '⏰'
+        break
+      case 'work':
+        return '💼'
+        break
+      case 'break':
+        return '☕️'
+      default:
+        break
+    }
+  }
+
+  function startCountDown(timer, isSecondLoop) {
+    const curTime = new Date().getTime()
+    const alreadyCompleted = nowAtPaused ? curTime - nowAtPaused : 0
+    const twentyFiveMinutesTime = curTime + (timer || config.TWENTY_FIVE_MINUTES) - alreadyCompleted
+
+    if (completedWorkPeriods === 0) {
+      log = [
+        ...log,
+        {
+          count: log.length,
+          completedAt: new Date(),
+          type: 'Focus on!',
+          periodType: 'started',
+        },
+      ]
+    }
+
+    countdown = setInterval(() => {
+      hasTimerStarted = true
+      nowAtPaused = null
+
+      now = new Date().getTime()
+
+      const distance = twentyFiveMinutesTime - now
+      minutesLeft = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60))
+      secondsLeft = Math.floor((distance % (1000 * 60)) / 1000)
+
+      if (distance < 0) {
+        clearInterval(countdown)
+
+        if (isSecondLoop) {
+          isSecondLoop = false
+
+          compeltedBreakPeriods++
+          minutesLeft = 0
+          secondsLeft = 0
+
+          log = [
+            ...log,
+            {
+              count: log.length,
+              completedAt: new Date(),
+              periodType: 'break',
+            },
+          ]
+
+          startCountDown(config.TWENTY_FIVE_MINUTES, isSecondLoop)
+          // Log completed break period
+        } else {
+          isSecondLoop = true
+
+          completedWorkPeriods++
+          minutesLeft = 0
+          secondsLeft = 0
+
+          log = [
+            ...log,
+            {
+              count: log.length,
+              completedAt: new Date(),
+              type: type || '',
+              periodType: 'work',
+            },
+          ]
+
+          startCountDown(config.ONE_MINUTE, isSecondLoop)
+          // Log work peroid
+        }
+      }
+    }, 1000)
+  }
+</script>
+
 <div class="timer-wrapper">
   <div class="timer" class:activeTimer={hasTimerStarted}>
     <h4>Focus timer ⏳</h4>
-    <p>You have completed {25 * completedWorkPeriods} minutes of work, and had {compeltedBreakPeriods * 5} minutes of breaks.</p>
+    <p>
+      You have completed {25 * completedWorkPeriods} minutes of work, and had {compeltedBreakPeriods * 5} minutes of breaks.
+    </p>
 
     {#if hasTimerStarted && type}
       <p transition:fade>Working on: <i>{type}</i></p>
@@ -9,7 +142,7 @@
 
     {#if !hasTimerStarted}
       <div class="group">
-        <input bind:value={type} type="text" placeholder="What are you working on? 🚀">
+        <input bind:value={type} type="text" placeholder="What are you working on? 🚀" />
       </div>
     {/if}
 
@@ -47,123 +180,6 @@
   </div>
 </div>
 
-<script>
-  import { config } from '../api/config'
-  import { format } from 'date-fns'
-  import { fade } from 'svelte/transition'
-
-  let type = ''
-
-  let minutesLeft = 25
-  let secondsLeft = 0
-  let hasTimerStarted = false
-  let countdown = null
-
-  let completedWorkPeriods = 0
-  let compeltedBreakPeriods = 0
-  let now = null
-  let nowAtPaused = null
-
-  let log = []
-
-  function formatDate (date) {
-    return format(date, 'HH:mm:ss aa')
-  }
-
-  function pauseTimer () {
-    nowAtPaused = now
-
-    clearInterval(countdown)
-  }
-
-  function resetTimer () {
-    minutesLeft = 25
-    secondsLeft = 0
-    hasTimerStarted = false
-    type = ''
-
-    clearInterval(countdown)
-  }
-
-  function getEmoji (periodType) {
-    switch (periodType) {
-      case 'started':
-        return '⏰'
-        break;
-      case 'work':
-        return '💼'
-        break
-      case 'break':
-        return '☕️'
-      default:
-        break;
-    }
-  }
-
-  function startCountDown (timer, isSecondLoop) {
-    const curTime = new Date().getTime()
-    const alreadyCompleted = nowAtPaused ? curTime - nowAtPaused : 0
-    const twentyFiveMinutesTime =  (curTime + (timer || config.TWENTY_FIVE_MINUTES)) - alreadyCompleted
-
-    if (completedWorkPeriods === 0) {
-      log = [...log, {
-        count: log.length,
-        completedAt: new Date(),
-        type: 'Focus on!',
-        periodType: 'started',
-      }]
-    }
-
-    countdown = setInterval(() => {
-      hasTimerStarted = true
-      nowAtPaused = null
-
-      now = new Date().getTime()
-
-      const distance = twentyFiveMinutesTime - now
-      minutesLeft = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60))
-      secondsLeft = Math.floor((distance % (1000 * 60)) / 1000)
-
-      if (distance < 0) {
-        clearInterval(countdown)
-
-        if (isSecondLoop) {
-          isSecondLoop = false
-
-          compeltedBreakPeriods++
-          minutesLeft = 0
-          secondsLeft = 0
-
-          log = [...log, {
-            count: log.length,
-            completedAt: new Date(),
-            periodType: 'break',
-          }]
-
-          startCountDown(config.TWENTY_FIVE_MINUTES, isSecondLoop)
-          // Log completed break period
-        } else {
-          isSecondLoop = true
-
-          completedWorkPeriods++
-          minutesLeft = 0
-          secondsLeft = 0
-
-          log = [...log, {
-            count: log.length,
-            completedAt: new Date(),
-            type: type || '',
-            periodType: 'work',
-          }]
-
-          startCountDown(config.ONE_MINUTE, isSecondLoop)
-          // Log work peroid
-        }
-      }
-    }, 1000);
-  }
-</script>
-
 <style>
   .log,
   .timer {
@@ -174,7 +190,7 @@
     display: flex;
     align-items: center;
     flex-direction: column;
-    box-shadow: 0 0 8px rgba(0,0,0,0.1);
+    box-shadow: 0 0 8px rgba(0, 0, 0, 0.1);
     margin: 0 2rem 2rem 0rem;
     max-height: 80vh;
     overflow-y: auto;
@@ -190,7 +206,9 @@
   }
 
   @keyframes timerStarted {
-    from { transform: scale(1.0);}
+    from {
+      transform: scale(1);
+    }
     to {
       transform: scale(1.015);
       backround: var(-accent);
