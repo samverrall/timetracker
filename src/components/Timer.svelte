@@ -1,13 +1,32 @@
+<script context="module">
+  export function preload(params, session) {
+    if (!session) {
+      return
+    }
+
+    if (session.user) {
+      return {
+        user: session.user,
+      }
+    }
+  }
+</script>
+
 <script>
   import { config } from '../api/config'
   import { format } from 'date-fns'
   import { fade } from 'svelte/transition'
   import { onMount, getContext } from 'svelte'
-  import axios from 'axios'
   import { stores } from '@sapper/app'
   const { session, page } = stores()
 
-  let user = $session.user || user
+  export let user
+
+  const platform = getContext('platform')
+  const { store } = platform
+
+  $store.showMenu = true
+
   let type = ''
 
   let minutesLeft = 25
@@ -184,7 +203,7 @@
   .log,
   .timer {
     text-align: center;
-    background: #fff;
+    background: var(--card-background);
     border-radius: 2rem;
     padding: 2rem;
     display: flex;

@@ -1,9 +1,21 @@
+<script context="module">
+  export function preload(params, session) {
+    if (!session) {
+      return
+    }
+
+    if (session.user) {
+      return { user: session.user }
+    }
+  }
+</script>
+
 <script>
   import Timer from '../components/Timer.svelte'
   import { stores } from '@sapper/app'
   const { session, page } = stores()
 
-  const user = $session.user || null
+  export let user
 
   function isAfternoon() {
     const curHr = new Date().getHours()
@@ -17,7 +29,8 @@
 </script>
 
 <div class="container">
-  <p>Good {isAfternoon() ? 'afternoon' : 'morning'}, {user ? user.name : 'human'}! 🌥</p>
+  <h1>Dashboard</h1>
+  <!-- <p>Good {isAfternoon() ? 'afternoon' : 'morning'}, {user ? user.name : 'human'}! 🌥</p> -->
 
   <div class="cols">
     <div class="col-1">

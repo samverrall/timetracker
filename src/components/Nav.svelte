@@ -1,7 +1,12 @@
 <script>
-  export let segment
-
   import { getContext } from 'svelte'
+  import { stores, goto } from '@sapper/app'
+  import MenuItem from './ui/MenuItem.svelte'
+
+  export let segment
+  export let user
+
+  const { session, page } = stores()
 
   const platform = getContext('platform')
   const { store } = platform
@@ -10,6 +15,15 @@
 
   function toggleMinimize() {
     minimized = !minimized
+  }
+
+  function logout() {
+    window.localStorage.removeItem('token')
+
+    $session.user = null
+    $session.claims = null
+
+    goto('/login')
   }
 </script>
 
@@ -20,20 +34,29 @@
       minimized = false
     }}
   >
-    <span on:click={toggleMinimize} class="material-icons minimize-icon">
-      {!minimized ? 'chevron_right' : 'chevron_left'}
-    </span>
+    <!--
+      <span on:click={toggleMinimize} class="material-icons minimize-icon">
+        {!minimized ? 'chevron_right' : 'chevron_left'}
+      </span>
+    -->
 
     <div class="top-menu">
-      <a href="/" class:active={segment === undefined} class="material-icons">logout</a>
+      {#if user}
+        <button on:click|preventDefault={logout} class="login-btn logout-btn material-icons">logout</button>
+      {:else}
+        <a href="/login" class="btn material-icons">login</a>
+      {/if}
+      <button class="material-icons">dark_mode</button>
     </div>
 
     <div class="menu">
-      <a href="/" class:active={segment === undefined} class="timer-link">Dashboard</a>
-      <a href="/" class="timer-link">Data</a>
-      <a href="/" class="timer-link">Config</a>
+      <MenuItem href="/" name="Dashboard" icon="dashboard" active={segment === undefined} />
+      <MenuItem href="/data" name="Data" icon="analytics" {segment} />
+      <MenuItem href="/config" name="Config" icon="settings" {segment} />
+      {#if user}
+        <MenuItem href="/my-account" name="My Account" icon="manage_accounts" active={segment === 'my-account'} />
+      {/if}
     </div>
-    <div />
   </nav>
 {/if}
 
@@ -42,14 +65,16 @@
     min-width: 300px;
     height: 100vh;
     font-weight: 300;
-    padding: 1em 0;
+    padding: 0 0 0 0;
     display: flex;
     flex-direction: column;
-    background-color: #fcfcfc;
+    background-color: var(--background-60);
+    border-left: 1px solid var(--border-dark);
     position: fixed;
     right: 0;
+    top: 0;
     transition: all 0.3s ease-in-out;
-    box-shadow: 0px 10px 10px rgba(0, 0, 0, 0.2);
+    box-shadow: 0px 10px 10px rgba(0, 0, 0, 0.1);
     z-index: 500;
   }
 
@@ -57,7 +82,7 @@
     right: -270px;
   }
 
-  .minimize-icon {
+  /* .minimize-icon {
     position: absolute;
     top: 50%;
     transform: translateY(-50%);
@@ -66,30 +91,43 @@
     cursor: pointer;
     border-radius: 100%;
     color: #fff;
-  }
+  } */
 
   .top-menu {
-    border-bottom: 1px solid rgba(0, 0, 0, 0.55);
-  }
-
-  .top-menu a {
-    color: rgba(0, 0, 0, 0.35);
+    border-bottom: 1px solid var(--border-gray);
+    padding: 0.75rem 1.2rem;
+    display: flex;
+    align-items: flex-end;
+    flex-direction: row-reverse;
   }
 
   .menu {
     display: flex;
     flex-direction: column;
+    padding: 2rem 0;
   }
 
-  a {
-    color: rgba(0, 0, 0, 0.65);
-    font-weight: 400;
-    padding: 1em;
+  nav .menu :global(a) {
+    color: var(--text);
+    font-weight: 600;
+    font-size: 1.2rem;
+    font-family: Poppins;
+    padding: 0.3em 1em;
     transition: all 0.3s ease-in-out;
     background: transparent;
   }
 
-  .active {
-    color: var(--accent);
+  .login-btn {
+    background: none;
+    color: var(--text);
+  }
+
+  .logout-btn {
+    background: rgb(189, 49, 49);
+    color: var(--text);
+  }
+
+  .logout-btn:hover {
+    background: rgb(157, 40, 40);
   }
 </style>

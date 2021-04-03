@@ -3,7 +3,8 @@
   import { onMount, onDestroy } from 'svelte'
   import AlertBox from '../AlertBox.svelte'
   import axios from 'axios'
-  import { goto } from '@sapper/app'
+  import { stores, goto } from '@sapper/app'
+  const { session, page } = stores()
 
   const platform = getContext('platform')
   const { store } = platform
@@ -32,6 +33,10 @@
   })
 
   async function submitForm() {
+    if (!$session) {
+      $session = {}
+    }
+
     error = false
 
     if (!user.email || !user.password) {
@@ -45,8 +50,6 @@
     try {
       const authorisedUser = await axios.post('http://localhost:5000/api/auth/login', user)
 
-      console.log('authorisedUser', authorisedUser)
-
       if (authorisedUser.data) {
         if (localStorage.getItem('token')) {
           localStorage.removeItem('token')
@@ -56,7 +59,13 @@
 
         delete authorisedUser.data.secret
 
-        $store.auth = authorisedUser.data.public.claims
+        $session.claims = authorisedUser.data.public.claims
+
+        const user = await axios.get(`http://localhost:5000/api/users/${$session.claims.user}`)
+
+        $session.user = user.data
+
+        $store.showMenu = true
 
         goto('/')
       }

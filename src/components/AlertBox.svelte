@@ -1,14 +1,14 @@
-<div class:error={isError} class:success={isSuccess} class="alert-box">
-  <h4>{heading}</h4>
-  <p>{message}</p>
-</div>
-
 <script>
   export let heading = ''
   export let message = ''
   export let isError = false
   export let isSuccess = true
 </script>
+
+<div class:error={isError} class:success={isSuccess} class="alert-box">
+  <h4>{heading}</h4>
+  <p>{message}</p>
+</div>
 
 <style>
   .alert-box {
@@ -28,5 +28,9 @@
 
   .success {
     background-color: rgba(52, 159, 30, 0.075);
+  }
+
+  .error {
+    background-color: #cd1a1a5a;
   }
 </style>

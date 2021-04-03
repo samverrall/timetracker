@@ -6,6 +6,10 @@
   const { session, page } = stores()
   import axios from 'axios'
 
+  if (!$session) {
+    $session = {}
+  }
+
   let showComponents = false
 
   const IS_BROWSER = typeof window !== 'undefined'
@@ -19,6 +23,7 @@
 
   const platform = {
     store,
+    showLoading: false,
   }
 
   checkIfLoggedIn()
@@ -30,14 +35,12 @@
 
     if (clientHasToken) {
       await getUserClaimsFromToken(clientHasToken)
+    } else {
+      showComponents = true
     }
   }
 
   async function getUserClaimsFromToken(token) {
-    if (!$session) {
-      $session = {}
-    }
-
     try {
       const req = await fetch(`http://localhost:5000/api/auth/token`, {
         method: 'POST',
@@ -64,8 +67,10 @@
       window.localStorage.removeItem('token')
 
       $session.claims = null
+      $session.user = null
 
       // window.location = '/login'
+
       console.error(err)
     }
 
@@ -78,7 +83,7 @@
 </script>
 
 {#if showComponents}
-  <Nav {segment} />
+  <Nav {segment} user={$session.user} />
 
   <main>
     <slot />
@@ -88,7 +93,6 @@
 <style>
   main {
     padding: 1% 2%;
-    background: aliceblue;
     height: 100vh;
   }
 </style>
