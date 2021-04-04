@@ -20,6 +20,10 @@
     try {
       const auth = authObj
 
+      if (!auth) {
+        return
+      }
+
       log = (
         await axios.get('http://localhost:5000/api/timelogs', {
           headers: {
@@ -58,9 +62,7 @@
   }
 
   async function postAction(action) {
-    const token = localStorage.getItem('token')
-
-    if (!token || !$session.user) {
+    if (!auth || !$session.auth) {
       return
     }
 
@@ -69,11 +71,11 @@
         'http://localhost:5000/api/timelogs',
         {
           ...action,
-          userId: $session.user.id,
+          userId: $session.auth.user.id,
         },
         {
           headers: {
-            Authorization: `Bearer ${token}`,
+            Authorization: `Bearer ${$session.auth.token}`,
           },
         }
       )

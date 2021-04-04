@@ -25,7 +25,6 @@
     <div class="col-1">
       <Timer auth={$session.auth || auth} />
     </div>
-    <div class="col-2" />
   </div>
 </div>
 
@@ -42,6 +41,6 @@
   .cols {
     width: 100%;
     display: grid;
-    grid-template-columns: 4fr 4fr;
+    grid-template-columns: 6fr 4fr;
   }
 </style>

@@ -19,9 +19,6 @@ polka() // You can also use Express
         if (req.cookies && req.cookies.token) {
           const userInfo = await getUserClaimsFromToken(req.cookies.token)
 
-          console.log('req.cookies.token', req.cookies.token)
-
-          // const res = await axios.get(`http://localhost:5000/api/users/${claims.claims.user}`)
           if (userInfo) {
             return {
               auth: userInfo,
@@ -53,8 +50,6 @@ async function getUserClaimsFromToken(token) {
         token,
       })
     ).data
-
-    console.log(resp)
 
     const claims = resp.public
 

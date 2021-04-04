@@ -24,7 +24,7 @@
     $session.auth = null
     $session.token = false
 
-    goto('/login')
+    window.location = '/login'
   }
 </script>
 
