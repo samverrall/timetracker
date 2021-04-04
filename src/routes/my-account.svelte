@@ -1,11 +1,27 @@
+<script context="module">
+  export function preload(params, session) {
+    if (!session.auth) {
+      return {
+        auth: null,
+      }
+    }
+
+    return {
+      auth: session.auth,
+    }
+  }
+</script>
+
 <script>
   import AlertBox from '../components/AlertBox.svelte'
   import MyAccountFrom from '../components/auth/MyAccountForm.svelte'
   import { stores } from '@sapper/app'
   const { session } = stores()
+
+  export let auth
 </script>
 
-{#if !$session || !$session.user}
+{#if !auth}
   <AlertBox
     isSuccess={false}
     isError={true}
@@ -16,6 +32,6 @@
   <h1>Manage your account 👀</h1>
 
   <div class="grid">
-    <MyAccountFrom user={$session.user} />
+    <MyAccountFrom user={auth.user} />
   </div>
 {/if}

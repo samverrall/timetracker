@@ -2,9 +2,10 @@
   import { getContext } from 'svelte'
   import { stores, goto } from '@sapper/app'
   import MenuItem from './ui/MenuItem.svelte'
+  import Cookies from 'js-cookie'
 
   export let segment
-  export let user
+  export let auth
 
   const { session, page } = stores()
 
@@ -18,10 +19,10 @@
   }
 
   function logout() {
-    window.localStorage.removeItem('token')
+    Cookies.remove('token')
 
-    $session.user = null
-    $session.claims = null
+    $session.auth = null
+    $session.token = false
 
     goto('/login')
   }
@@ -41,7 +42,7 @@
     -->
 
     <div class="top-menu">
-      {#if user}
+      {#if auth || $session.auth}
         <button on:click|preventDefault={logout} class="login-btn logout-btn material-icons">logout</button>
       {:else}
         <a href="/login" class="btn material-icons">login</a>
@@ -53,7 +54,7 @@
       <MenuItem href="/" name="Dashboard" icon="dashboard" active={segment === undefined} />
       <MenuItem href="/data" name="Data" icon="analytics" {segment} />
       <MenuItem href="/config" name="Config" icon="settings" {segment} />
-      {#if user}
+      {#if auth || $session.auth}
         <MenuItem href="/my-account" name="My Account" icon="manage_accounts" active={segment === 'my-account'} />
       {/if}
     </div>

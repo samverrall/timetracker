@@ -4,8 +4,8 @@
       return
     }
 
-    if (session.user) {
-      return { user: session.user }
+    if (session.auth) {
+      return { auth: session.auth }
     }
   }
 </script>
@@ -15,26 +15,15 @@
   import { stores } from '@sapper/app'
   const { session, page } = stores()
 
-  export let user
-
-  function isAfternoon() {
-    const curHr = new Date().getHours()
-
-    if (curHr > 12) {
-      return true
-    }
-
-    return false
-  }
+  export let auth
 </script>
 
 <div class="container">
   <h1>Dashboard</h1>
-  <!-- <p>Good {isAfternoon() ? 'afternoon' : 'morning'}, {user ? user.name : 'human'}! 🌥</p> -->
 
   <div class="cols">
     <div class="col-1">
-      <Timer />
+      <Timer auth={$session.auth || auth} />
     </div>
     <div class="col-2" />
   </div>

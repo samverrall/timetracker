@@ -5,6 +5,7 @@
   import axios from 'axios'
   import { stores, goto } from '@sapper/app'
   const { session, page } = stores()
+  import Cookies from 'js-cookie'
 
   const platform = getContext('platform')
   const { store } = platform
@@ -51,11 +52,11 @@
       const authorisedUser = await axios.post('http://localhost:5000/api/auth/login', user)
 
       if (authorisedUser.data) {
-        if (localStorage.getItem('token')) {
-          localStorage.removeItem('token')
+        if (Cookies.get('token')) {
+          Cookies.remove('token')
         }
 
-        localStorage.setItem('token', authorisedUser.data.secret.token)
+        Cookies.set('token', authorisedUser.data.secret.token)
 
         delete authorisedUser.data.secret
 
@@ -67,7 +68,7 @@
 
         $store.showMenu = true
 
-        goto('/')
+        window.location = '/'
       }
     } catch (err) {
       console.error(err)

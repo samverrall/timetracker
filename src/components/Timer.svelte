@@ -1,29 +1,37 @@
-<script context="module">
-  export function preload(params, session) {
-    if (!session) {
-      return
-    }
-
-    if (session.user) {
-      return {
-        user: session.user,
-      }
-    }
-  }
-</script>
-
 <script>
   import { config } from '../api/config'
-  import { format } from 'date-fns'
+  import { format, parseISO } from 'date-fns'
   import { fade } from 'svelte/transition'
   import { onMount, getContext } from 'svelte'
   import { stores } from '@sapper/app'
+  import axios from 'axios'
   const { session, page } = stores()
 
-  export let user
+  export let auth
+
+  const authObj = auth || $session.auth
 
   const platform = getContext('platform')
   const { store } = platform
+
+  let log = []
+
+  onMount(async () => {
+    try {
+      const auth = authObj
+
+      log = (
+        await axios.get('http://localhost:5000/api/timelogs', {
+          headers: {
+            Authorization: `Bearer ${auth.token}`,
+          },
+        })
+      ).data
+    } catch (err) {
+      log = []
+      console.error(err)
+    }
+  })
 
   $store.showMenu = true
 
@@ -39,16 +47,43 @@
   let now = null
   let nowAtPaused = null
 
-  let log = []
-
   function formatDate(date) {
-    return format(date, 'HH:mm:ss aa')
+    return format(parseISO(date), 'HH:mm:ss aa')
   }
 
   function pauseTimer() {
     nowAtPaused = now
 
     clearInterval(countdown)
+  }
+
+  async function postAction(action) {
+    const token = localStorage.getItem('token')
+
+    if (!token || !$session.user) {
+      return
+    }
+
+    try {
+      const res = await axios.post(
+        'http://localhost:5000/api/timelogs',
+        {
+          ...action,
+          userId: $session.user.id,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      )
+
+      const createdTimelog = res.data
+
+      log = [...log, createdTimelog]
+    } catch (err) {
+      console.error(err)
+    }
   }
 
   function resetTimer() {
@@ -81,15 +116,12 @@
     const twentyFiveMinutesTime = curTime + (timer || config.TWENTY_FIVE_MINUTES) - alreadyCompleted
 
     if (completedWorkPeriods === 0) {
-      log = [
-        ...log,
-        {
-          count: log.length,
-          completedAt: new Date(),
-          type: 'Focus on!',
-          periodType: 'started',
-        },
-      ]
+      postAction({
+        count: log.length,
+        completedAt: new Date(),
+        type: 'Focus on!',
+        periodType: 'started',
+      })
     }
 
     countdown = setInterval(() => {
@@ -112,14 +144,20 @@
           minutesLeft = 0
           secondsLeft = 0
 
-          log = [
-            ...log,
-            {
-              count: log.length,
-              completedAt: new Date(),
-              periodType: 'break',
-            },
-          ]
+          // log = [
+          //   ...log,
+          //   {
+          //     count: log.length,
+          //     completedAt: new Date(),
+          //     periodType: 'break',
+          //   },
+          // ]
+
+          postAction({
+            count: log.length,
+            completedAt: new Date(),
+            periodType: 'break',
+          })
 
           startCountDown(config.TWENTY_FIVE_MINUTES, isSecondLoop)
           // Log completed break period
@@ -130,15 +168,22 @@
           minutesLeft = 0
           secondsLeft = 0
 
-          log = [
-            ...log,
-            {
-              count: log.length,
-              completedAt: new Date(),
-              type: type || '',
-              periodType: 'work',
-            },
-          ]
+          // log = [
+          //   ...log,
+          //   {
+          //     count: log.length,
+          //     completedAt: new Date(),
+          //     type: type || '',
+          //     periodType: 'work',
+          //   },
+          // ]
+
+          postAction({
+            count: log.length,
+            completedAt: new Date(),
+            type: type || '',
+            periodType: 'work',
+          })
 
           startCountDown(config.ONE_MINUTE, isSecondLoop)
           // Log work peroid
@@ -193,7 +238,7 @@
         {#if l.periodType === 'work'}
           <div class="type">{l.type}</div>
         {/if}
-        <div class="completed">{formatDate(l.completedAt)}</div>
+        <div class="completed">{formatDate(l.createdAt)}</div>
       </div>
     {/each}
   </div>
@@ -241,12 +286,13 @@
   .log--row {
     display: flex;
     justify-content: space-between;
-    border-bottom: 1px solid var(--border-gray);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
     width: 100%;
+    padding: 0.5rem;
   }
 
   .log--row:nth-child(odd) {
-    background: var(--border-gray);
+    background: var(--background-60);
   }
 
   .timer-wrapper {
