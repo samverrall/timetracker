@@ -14,10 +14,6 @@
 
   let minimized = false
 
-  function toggleMinimize() {
-    minimized = !minimized
-  }
-
   function logout() {
     Cookies.remove('token')
 
@@ -35,24 +31,19 @@
       minimized = false
     }}
   >
-    <!--
-      <span on:click={toggleMinimize} class="material-icons minimize-icon">
-        {!minimized ? 'chevron_right' : 'chevron_left'}
-      </span>
-    -->
-
     <div class="top-menu">
       {#if auth || $session.auth}
         <button on:click|preventDefault={logout} class="login-btn logout-btn material-icons">logout</button>
       {:else}
         <a href="/login" class="btn material-icons">login</a>
       {/if}
-      <button class="material-icons">dark_mode</button>
+      <button data-tooltip="Toggle darkmode" class="top-menu-btn material-icons">dark_mode</button>
+      <button data-tooltip="Notifications" class="top-menu-btn material-icons">notifications</button>
     </div>
 
     <div class="menu">
       <MenuItem href="/" name="Dashboard" icon="dashboard" active={segment === undefined} />
-      <MenuItem href="/data" name="Data" icon="analytics" {segment} />
+      <MenuItem href="/analytics" name="Analytics" icon="analytics" {segment} />
       <MenuItem href="/config" name="Config" icon="settings" {segment} />
       {#if auth || $session.auth}
         <MenuItem href="/my-account" name="My Account" icon="manage_accounts" active={segment === 'my-account'} />
@@ -102,6 +93,10 @@
     flex-direction: row-reverse;
   }
 
+  .top-menu button {
+    margin: 0 10px 0 0;
+  }
+
   .menu {
     display: flex;
     flex-direction: column;
@@ -130,5 +125,10 @@
 
   .logout-btn:hover {
     background: rgb(157, 40, 40);
+  }
+
+  .top-menu-btn {
+    background: var(--button-gray);
+    color: var(--background-60);
   }
 </style>
