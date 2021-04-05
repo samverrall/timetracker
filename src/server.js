@@ -15,7 +15,6 @@ polka() // You can also use Express
     sirv('static', { dev }),
     sapper.middleware({
       session: async (req, res) => {
-        // populates user if it exists
         if (req.cookies && req.cookies.token) {
           const userInfo = await getUserClaimsFromToken(req.cookies.token)
 

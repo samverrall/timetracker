@@ -1,6 +1,8 @@
 <script>
+  import TypeAhead from '../components/ui/TypeAhead.svelte'
+  import { getTimelogsByDate } from '../api/timelogs'
   import { config } from '../api/config'
-  import { format, parseISO } from 'date-fns'
+  import { sub, add, format, parseISO } from 'date-fns'
   import { fade } from 'svelte/transition'
   import { onMount, getContext } from 'svelte'
   import { stores } from '@sapper/app'
@@ -16,25 +18,16 @@
 
   let log = []
 
+  let activeTimeLogDate = new Date()
+
   onMount(async () => {
-    try {
-      const auth = authObj
+    const auth = authObj
 
-      if (!auth) {
-        return
-      }
-
-      log = (
-        await axios.get('http://localhost:5000/api/timelogs', {
-          headers: {
-            Authorization: `Bearer ${auth.token}`,
-          },
-        })
-      ).data
-    } catch (err) {
-      log = []
-      console.error(err)
+    if (!auth) {
+      return
     }
+
+    log = await getTimelogsByDate(auth, new Date())
   })
 
   $store.showMenu = true
@@ -146,15 +139,6 @@
           minutesLeft = 0
           secondsLeft = 0
 
-          // log = [
-          //   ...log,
-          //   {
-          //     count: log.length,
-          //     completedAt: new Date(),
-          //     periodType: 'break',
-          //   },
-          // ]
-
           postAction({
             count: log.length,
             completedAt: new Date(),
@@ -170,16 +154,6 @@
           minutesLeft = 0
           secondsLeft = 0
 
-          // log = [
-          //   ...log,
-          //   {
-          //     count: log.length,
-          //     completedAt: new Date(),
-          //     type: type || '',
-          //     periodType: 'work',
-          //   },
-          // ]
-
           postAction({
             count: log.length,
             completedAt: new Date(),
@@ -192,6 +166,33 @@
         }
       }
     }, 1000)
+  }
+
+  async function loadTimelogDay(day) {
+    switch (day) {
+      case 'previous':
+        {
+          const date = sub(activeTimeLogDate, {
+            days: 1,
+          })
+
+          log = await getTimelogsByDate(authObj, date)
+          activeTimeLogDate = date
+        }
+        break
+      case 'next':
+        {
+          const date = add(activeTimeLogDate, {
+            days: 1,
+          })
+
+          log = await getTimelogsByDate(authObj, date)
+          activeTimeLogDate = date
+        }
+        break
+      default:
+        break
+    }
   }
 </script>
 
@@ -208,7 +209,8 @@
 
     {#if !hasTimerStarted}
       <div class="group">
-        <input bind:value={type} type="text" placeholder="What are you working on? 🚀" />
+        <TypeAhead data={log} key="type" placeholder="What are you working on? 🚀" />
+        <!-- <input bind:value={type} type="text" placeholder="What are you working on? 🚀" /> -->
       </div>
     {/if}
 
@@ -218,7 +220,9 @@
 
     <div class="buttons">
       {#if !hasTimerStarted}
-        <button class="material-icons" on:click|preventDefault={() => startCountDown()}>play_arrow</button>
+        <button data-tooltip="Start the timer!" class="material-icons" on:click|preventDefault={() => startCountDown()}
+          >play_arrow</button
+        >
       {:else}
         {#if nowAtPaused}
           <button class="material-icons" on:click|preventDefault={() => startCountDown()}>play_arrow</button>
@@ -233,6 +237,16 @@
   <div class="log">
     <h4>Time log</h4>
     <p>We keep a log of your time, as you work! 🚀</p>
+
+    <div class="calendar-row">
+      <button on:click={() => loadTimelogDay('previous')} class="material-icons" data-tooltip="Previous day"
+        >chevron_left</button
+      >
+      <p>{format(activeTimeLogDate, 'eeee, do MMMM')}</p>
+      <button on:click={() => loadTimelogDay('next')} class="material-icons" data-tooltip="Next day"
+        >chevron_right</button
+      >
+    </div>
 
     {#each log as l, i}
       <div class="log--row">
@@ -261,6 +275,7 @@
     max-height: 80vh;
     overflow-y: auto;
     position: relative;
+    flex: 1;
   }
 
   .activeTimer {
@@ -298,7 +313,8 @@
   }
 
   .timer-wrapper {
-    display: flex;
+    display: grid;
+    grid-template-columns: 5fr 7fr;
   }
 
   .buttons {
@@ -325,5 +341,19 @@
   button {
     border-radius: 100%;
     font-size: 2rem;
+  }
+
+  .calendar-row {
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
+    margin: 1rem 0;
+  }
+
+  .calendar-row button {
+    font-size: 1rem;
+    padding: 0.5rem;
+    width: 30px;
+    height: 30px;
   }
 </style>

@@ -38,15 +38,22 @@
   export let segment
 </script>
 
-<Nav {segment} {auth} />
+<div class="site-wrapper">
+  <Nav {segment} {auth} />
 
-<main>
-  <slot />
-</main>
+  <main>
+    <slot />
+  </main>
+</div>
 
 <style>
   main {
     padding: 1% 2%;
     height: 100vh;
+  }
+
+  .site-wrapper {
+    display: grid;
+    grid-template-columns: 9fr 3fr;
   }
 </style>
