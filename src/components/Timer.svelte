@@ -6,6 +6,8 @@
   import { fade } from 'svelte/transition'
   import { onMount, getContext } from 'svelte'
   import { stores } from '@sapper/app'
+  import DatePicker from '../components/DatePicker.svelte'
+
   import axios from 'axios'
   const { session, page } = stores()
 
@@ -169,6 +171,10 @@
   }
 
   async function loadTimelogDay(day) {
+    if (typeof day === 'object') {
+      log = await getTimelogsByDate(authObj, day)
+    }
+
     switch (day) {
       case 'previous':
         {
@@ -193,6 +199,16 @@
       default:
         break
     }
+  }
+
+  async function setActiveTimeLog({ detail }) {
+    if (!detail) {
+      return
+    }
+
+    activeTimeLogDate = detail
+
+    await loadTimelogDay(activeTimeLogDate)
   }
 </script>
 
@@ -242,7 +258,10 @@
       <button on:click={() => loadTimelogDay('previous')} class="material-icons" data-tooltip="Previous day"
         >chevron_left</button
       >
-      <p>{format(activeTimeLogDate, 'eeee, do MMMM')}</p>
+      <div class="middle">
+        <p>{format(activeTimeLogDate, 'eeee, do MMMM')}</p>
+        <DatePicker on:change={setActiveTimeLog} bind:value={activeTimeLogDate} />
+      </div>
       <button on:click={() => loadTimelogDay('next')} class="material-icons" data-tooltip="Next day"
         >chevron_right</button
       >
@@ -355,5 +374,10 @@
     padding: 0.5rem;
     width: 30px;
     height: 30px;
+  }
+
+  .calendar-row .middle {
+    display: flex;
+    align-items: center;
   }
 </style>
