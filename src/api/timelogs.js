@@ -1,17 +1,15 @@
-import axios from 'axios'
+import { fetch } from './fetchClient'
 import { format } from 'date-fns'
 
-export async function getTimelogsByDate(auth, date) {
+export async function getTimelogsByDate(date) {
   try {
     const todayFormatted = format(date, 'yyyy-MM-dd')
 
-    const res = await axios.get(`http://localhost:5000/api/timelogs?date=${todayFormatted}`, {
-      headers: {
-        Authorization: `Bearer ${auth.token}`,
-      },
-    })
+    const res = await fetch(`http://localhost:5000/api/timelogs?date=${todayFormatted}`)
 
-    return res.data
+    const data = await res.json()
+
+    return data
   } catch (err) {
     console.error(err)
 

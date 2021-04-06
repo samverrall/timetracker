@@ -4,4 +4,5 @@ export const config = {
   TWENTY_MINUTES: 60000 * 12,
   FIVE_MINUTES: 60000 * 5,
   ONE_MINUTE: 60000 / 4,
+  API_BASE_URL: 'http://localhost:5000',
 }
