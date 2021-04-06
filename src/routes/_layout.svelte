@@ -15,6 +15,7 @@
   import { setContext } from 'svelte'
   import { create as createStore } from '../store/store'
   import { stores } from '@sapper/app'
+  import { fetch } from '../api/fetchClient'
   const { session, page } = stores()
 
   export let auth
@@ -31,6 +32,7 @@
   const platform = {
     store,
     showLoading: false,
+    fetch,
   }
 
   setContext('platform', platform)

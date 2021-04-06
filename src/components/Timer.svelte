@@ -7,6 +7,7 @@
   import { onMount, getContext } from 'svelte'
   import { stores } from '@sapper/app'
   import DatePicker from '../components/DatePicker.svelte'
+  import Fullscreen from '../components/Fullscreen.svelte'
 
   import axios from 'axios'
   const { session, page } = stores()
@@ -29,7 +30,7 @@
       return
     }
 
-    log = await getTimelogsByDate(auth, new Date())
+    log = await getTimelogsByDate(new Date())
   })
 
   $store.showMenu = true
@@ -62,20 +63,15 @@
     }
 
     try {
-      const res = await axios.post(
-        'http://localhost:5000/api/timelogs',
-        {
+      const res = await platform.fetch('http://localhost:5000/api/timelogs', {
+        method: 'POST',
+        body: JSON.stringify({
           ...action,
           userId: $session.auth.user.id,
-        },
-        {
-          headers: {
-            Authorization: `Bearer ${$session.auth.token}`,
-          },
-        }
-      )
+        }),
+      })
 
-      const createdTimelog = res.data
+      const createdTimelog = await res.json()
 
       log = [...log, createdTimelog]
     } catch (err) {
@@ -172,7 +168,7 @@
 
   async function loadTimelogDay(day) {
     if (typeof day === 'object') {
-      log = await getTimelogsByDate(authObj, day)
+      log = await getTimelogsByDate(day)
     }
 
     switch (day) {
@@ -182,7 +178,7 @@
             days: 1,
           })
 
-          log = await getTimelogsByDate(authObj, date)
+          log = await getTimelogsByDate(date)
           activeTimeLogDate = date
         }
         break
@@ -192,7 +188,7 @@
             days: 1,
           })
 
-          log = await getTimelogsByDate(authObj, date)
+          log = await getTimelogsByDate(date)
           activeTimeLogDate = date
         }
         break
@@ -213,70 +209,76 @@
 </script>
 
 <div class="timer-wrapper">
-  <div class="timer" class:activeTimer={hasTimerStarted}>
-    <h4>Focus timer ⏳</h4>
-    <p>
-      You have completed {25 * completedWorkPeriods} minutes of work, and had {compeltedBreakPeriods * 5} minutes of breaks.
-    </p>
+  <Fullscreen>
+    <div class="timer" class:activeTimer={hasTimerStarted}>
+      <h4>Focus timer ⏳</h4>
+      <p>
+        You have completed {25 * completedWorkPeriods} minutes of work, and had {compeltedBreakPeriods * 5} minutes of breaks.
+      </p>
 
-    {#if hasTimerStarted && type}
-      <p transition:fade>Working on: <i>{type}</i></p>
-    {/if}
-
-    {#if !hasTimerStarted}
-      <div class="group">
-        <TypeAhead data={log} key="type" placeholder="What are you working on? 🚀" />
-        <!-- <input bind:value={type} type="text" placeholder="What are you working on? 🚀" /> -->
-      </div>
-    {/if}
-
-    <div class="clock">
-      <h1>{minutesLeft}:{secondsLeft}{hasTimerStarted ? '' : 0}</h1>
-    </div>
-
-    <div class="buttons">
-      {#if !hasTimerStarted}
-        <button data-tooltip="Start the timer!" class="material-icons" on:click|preventDefault={() => startCountDown()}
-          >play_arrow</button
-        >
-      {:else}
-        {#if nowAtPaused}
-          <button class="material-icons" on:click|preventDefault={() => startCountDown()}>play_arrow</button>
-        {:else}
-          <button class="material-icons" on:click|preventDefault={pauseTimer}>pause</button>
-        {/if}
-        <button class="material-icons" on:click|preventDefault={resetTimer}>restart_alt</button>
+      {#if hasTimerStarted && type}
+        <p transition:fade>Working on: <i>{type}</i></p>
       {/if}
-    </div>
-  </div>
 
-  <div class="log">
-    <h4>Time log</h4>
-    <p>We keep a log of your time, as you work! 🚀</p>
+      {#if !hasTimerStarted}
+        <div class="group">
+          <TypeAhead data={log} key="type" placeholder="What are you working on? 🚀" />
+          <!-- <input bind:value={type} type="text" placeholder="What are you working on? 🚀" /> -->
+        </div>
+      {/if}
 
-    <div class="calendar-row">
-      <button on:click={() => loadTimelogDay('previous')} class="material-icons" data-tooltip="Previous day"
-        >chevron_left</button
-      >
-      <div class="middle">
-        <p>{format(activeTimeLogDate, 'eeee, do MMMM')}</p>
-        <DatePicker on:change={setActiveTimeLog} bind:value={activeTimeLogDate} />
+      <div class="clock">
+        <h1>{minutesLeft}:{secondsLeft}{hasTimerStarted ? '' : 0}</h1>
       </div>
-      <button on:click={() => loadTimelogDay('next')} class="material-icons" data-tooltip="Next day"
-        >chevron_right</button
-      >
-    </div>
 
-    {#each log as l, i}
-      <div class="log--row">
-        <div class="type">{getEmoji(l.periodType)}</div>
-        {#if l.periodType === 'work'}
-          <div class="type">{l.type}</div>
+      <div class="buttons">
+        {#if !hasTimerStarted}
+          <button
+            data-tooltip="Start the timer!"
+            class="material-icons"
+            on:click|preventDefault={() => startCountDown()}>play_arrow</button
+          >
+        {:else}
+          {#if nowAtPaused}
+            <button class="material-icons" on:click|preventDefault={() => startCountDown()}>play_arrow</button>
+          {:else}
+            <button class="material-icons" on:click|preventDefault={pauseTimer}>pause</button>
+          {/if}
+          <button class="material-icons" on:click|preventDefault={resetTimer}>restart_alt</button>
         {/if}
-        <div class="completed">{formatDate(l.createdAt)}</div>
       </div>
-    {/each}
-  </div>
+    </div>
+  </Fullscreen>
+
+  <Fullscreen>
+    <div class="log">
+      <h4>Time log</h4>
+      <p>We keep a log of your time, as you work! 🚀</p>
+
+      <div class="calendar-row">
+        <button on:click={() => loadTimelogDay('previous')} class="material-icons" data-tooltip="Previous day"
+          >chevron_left</button
+        >
+        <div class="middle">
+          <p>{format(activeTimeLogDate, 'eeee, do MMMM')}</p>
+          <DatePicker on:change={setActiveTimeLog} bind:value={activeTimeLogDate} />
+        </div>
+        <button on:click={() => loadTimelogDay('next')} class="material-icons" data-tooltip="Next day"
+          >chevron_right</button
+        >
+      </div>
+
+      {#each log as l, i}
+        <div class="log--row">
+          <div class="type">{getEmoji(l.periodType)}</div>
+          {#if l.periodType === 'work'}
+            <div class="type">{l.type}</div>
+          {/if}
+          <div class="completed">{formatDate(l.createdAt)}</div>
+        </div>
+      {/each}
+    </div>
+  </Fullscreen>
 </div>
 
 <style>
@@ -295,6 +297,7 @@
     overflow-y: auto;
     position: relative;
     flex: 1;
+    height: 100%;
   }
 
   .activeTimer {
