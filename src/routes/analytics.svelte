@@ -24,7 +24,7 @@
 
     return {
       auth: session.auth,
-      data: data || [],
+      data,
     }
   }
 </script>

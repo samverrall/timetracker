@@ -12,8 +12,6 @@
   const platform = getContext('platform')
   const { store } = platform
 
-  let minimized = false
-
   function logout() {
     Cookies.remove('token')
 
@@ -22,15 +20,12 @@
 
     window.location = '/login'
   }
+
+  $: console.log(segment)
 </script>
 
 {#if $store.showMenu}
-  <nav
-    class:minimized
-    on:mouseover={() => {
-      minimized = false
-    }}
-  >
+  <nav>
     <div class="top-menu">
       {#if auth || $session.auth}
         <button on:click|preventDefault={logout} class="login-btn logout-btn material-icons">logout</button>
@@ -43,10 +38,14 @@
 
     <div class="menu">
       <MenuItem href="/" name="Dashboard" icon="dashboard" active={segment === undefined} />
-      <MenuItem href="/analytics" name="Analytics" icon="analytics" {segment} />
+      <MenuItem href="/analytics" name="Analytics" icon="analytics" active={segment === 'analytics'} />
       <MenuItem href="/config" name="Config" icon="settings" {segment} />
       {#if auth || $session.auth}
         <MenuItem href="/my-account" name="My Account" icon="manage_accounts" active={segment === 'my-account'} />
+      {/if}
+
+      {#if $session.auth && platform.user.hasRole($session.auth.user, 'admin')}
+        <MenuItem href="/admin" name="Admin" icon="admin_panel_settings" acitve={segment === 'admin'} />
       {/if}
     </div>
   </nav>

@@ -19,7 +19,8 @@
     "polka": "next",
     "sirv": "^1.0.0",
     "sortablejs": "^1.13.0",
-    "svelte-chartjs": "^1.0.1"
+    "svelte-chartjs": "^1.0.1",
+    "svelte-simple-datatables": "^0.1.25"
   },
   "devDependencies": {
     "@babel/core": "^7.0.0",

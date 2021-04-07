@@ -16,6 +16,7 @@
   import { create as createStore } from '../store/store'
   import { stores } from '@sapper/app'
   import { fetch } from '../api/fetchClient'
+  import { hasRole } from '../api/user'
   const { session, page } = stores()
 
   export let auth
@@ -33,6 +34,12 @@
     store,
     showLoading: false,
     fetch,
+    IS_BROWSER,
+    user: {
+      hasRole(auth, role) {
+        return hasRole(auth, role)
+      },
+    },
   }
 
   setContext('platform', platform)
