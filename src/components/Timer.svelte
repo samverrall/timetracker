@@ -206,6 +206,14 @@
 
     await loadTimelogDay(activeTimeLogDate)
   }
+
+  function handleTimerType(e) {
+    if (!e.detail) {
+      return
+    }
+
+    type = e.detail
+  }
 </script>
 
 <div class="timer-wrapper">
@@ -222,7 +230,7 @@
 
       {#if !hasTimerStarted}
         <div class="group">
-          <TypeAhead data={log} key="type" placeholder="What are you working on? 🚀" />
+          <TypeAhead on:val={handleTimerType} data={log} key="type" placeholder="What are you working on? 🚀" />
           <!-- <input bind:value={type} type="text" placeholder="What are you working on? 🚀" /> -->
         </div>
       {/if}

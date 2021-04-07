@@ -1,4 +1,8 @@
 <script>
+  import { createEventDispatcher } from 'svelte'
+
+  const dispatch = createEventDispatcher()
+
   export let data = []
   export let key = ''
   export let placeholder = ''
@@ -33,7 +37,7 @@
 </script>
 
 <div class="typeahead {classNames.join(' ')}">
-  <input {placeholder} type="text" bind:value={searchTerm} />
+  <input {placeholder} type="text" on:input={e => dispatch('val', searchTerm)} bind:value={searchTerm} />
 
   {#if dropDownVals.length}
     <div class="results">
