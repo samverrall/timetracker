@@ -24,6 +24,12 @@
 
     searchTerm = searchTerm.toLowerCase()
 
+    if (Array.isArray(data)) {
+      dropDownVals = data.map(d => d.toLowerCase()).filter(d => d.includes(searchTerm))
+
+      return
+    }
+
     const filtered = data.filter(d => d[key])
 
     if (filtered) {
@@ -34,6 +40,12 @@
       }
     }
   }
+
+  function handleSelected(val) {
+    dispatch('val', val)
+
+    dropDownVals = []
+  }
 </script>
 
 <div class="typeahead {classNames.join(' ')}">
@@ -42,7 +54,7 @@
   {#if dropDownVals.length}
     <div class="results">
       {#each dropDownVals as val, index}
-        <div class="result">{val}</div>
+        <div class="result" on:click={() => handleSelected(val)}>{val}</div>
       {/each}
     </div>
   {/if}

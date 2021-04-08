@@ -9,7 +9,6 @@
   import DatePicker from '../components/DatePicker.svelte'
   import Fullscreen from '../components/Fullscreen.svelte'
 
-  import axios from 'axios'
   const { session, page } = stores()
 
   export let auth
@@ -20,6 +19,7 @@
   const { store } = platform
 
   let log = []
+  let logTypes = []
 
   let activeTimeLogDate = new Date()
 
@@ -29,6 +29,10 @@
     if (!auth) {
       return
     }
+
+    logTypes = await getAllTypes()
+
+    console.log('logTypes', logTypes)
 
     log = await getTimelogsByDate(new Date())
   })
@@ -166,6 +170,20 @@
     }, 1000)
   }
 
+  async function getAllTypes() {
+    let types = []
+
+    try {
+      const res = await platform.fetch('http://localhost:5000/api/timelogs/types')
+
+      types = await res.json()
+    } catch (error) {
+      console.error(error)
+    }
+
+    return types
+  }
+
   async function loadTimelogDay(day) {
     if (typeof day === 'object') {
       log = await getTimelogsByDate(day)
@@ -230,7 +248,7 @@
 
       {#if !hasTimerStarted}
         <div class="group">
-          <TypeAhead on:val={handleTimerType} data={log} key="type" placeholder="What are you working on? 🚀" />
+          <TypeAhead on:val={handleTimerType} data={logTypes} placeholder="What are you working on? 🚀" />
           <!-- <input bind:value={type} type="text" placeholder="What are you working on? 🚀" /> -->
         </div>
       {/if}
@@ -276,7 +294,7 @@
         >
       </div>
 
-      {#each log as l, i}
+      {#each log as l}
         <div class="log--row">
           <div class="type">{getEmoji(l.periodType)}</div>
           {#if l.periodType === 'work'}
