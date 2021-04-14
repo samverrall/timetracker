@@ -32,8 +32,6 @@
 
     logTypes = await getAllTypes()
 
-    console.log('logTypes', logTypes)
-
     log = await getTimelogsByDate(new Date())
   })
 
