@@ -55,7 +55,10 @@
   </main>
 </div>
 
-<style>
+<style global lang="postcss">
+  @tailwind base;
+  @tailwind components;
+  @tailwind utilities;
   main {
     padding: 1% 2%;
     height: 100vh;
