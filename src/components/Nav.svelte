@@ -20,8 +20,6 @@
 
     window.location = '/login'
   }
-
-  $: console.log(segment)
 </script>
 
 {#if $store.showMenu}
